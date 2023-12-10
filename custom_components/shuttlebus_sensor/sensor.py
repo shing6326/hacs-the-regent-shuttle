@@ -12,10 +12,6 @@ from datetime import datetime, timedelta
 import pytz
 import aiohttp
 import json
-import logging
-
-_LOGGER = logging.getLogger(__name__)
-
 
 # Async function to fetch holiday data
 async def fetch_holiday_data():
@@ -93,6 +89,7 @@ class BusTitleSensor(SensorEntity):
         self.holiday_data = holiday_data
         self._state = "時間"
         self._name = None
+        self.first_update = True
         self._last_update = pytz.utc.localize(datetime.min)
 
     @property
@@ -126,6 +123,11 @@ class BusTitleSensor(SensorEntity):
 
     def update(self):
         """Update the sensor."""
+        # try to block the first minute update for the entity name so that the name would not override the unique id
+        if self.first_update:
+            self.hass.helpers.event.async_call_later(60, lambda _: self.async_schedule_update_ha_state(True))
+            self.first_update = False
+            return
         self._name = self.generate_sensor_name()
         self.schedule_next_update()
 
@@ -147,6 +149,7 @@ class BusScheduleSensor(Entity):
         self._name = None
         self._state = None
         self._attributes = {'departure_time': None, 'route': self.route, 'is_holiday': False}
+        self.first_update = True
         self._last_update = pytz.utc.localize(datetime.min)
 
     @property
@@ -179,6 +182,12 @@ class BusScheduleSensor(Entity):
         return True
 
     def update(self):
+        # try to block the first minute update for the entity name so that the name would not override the unique id
+        if self.first_update:
+            self.hass.helpers.event.async_call_later(60, lambda _: self.async_schedule_update_ha_state(True))
+            self.first_update = False
+            return
+
         """Fetch new state data for the sensor."""
         timezone = pytz.timezone('Asia/Hong_Kong')
         now = datetime.now(timezone)
