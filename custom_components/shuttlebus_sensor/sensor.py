@@ -199,7 +199,7 @@ class BusScheduleSensor(Entity):
             if seconds_diff <= 0:
                 self._state = '已開出'
             elif seconds_diff <= 60:  # Less than 1 minute
-                self._state = "<1 分鐘"
+                self._state = "<1分鐘"
             elif seconds_diff <= 3600:  # Less than 1 hour
                 self._state = f"{int(seconds_diff // 60)}分鐘"
             else:  # Longer than 1 hour
