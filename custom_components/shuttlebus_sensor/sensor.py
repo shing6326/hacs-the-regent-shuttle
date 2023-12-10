@@ -101,6 +101,11 @@ class BusTitleSensor(SensorEntity):
         return f"shuttlebus_sensor_{self.route[0]}_title"
 
     @property
+    def name(self):
+        """Return the name for this sensor."""
+        return self._name
+
+    @property
     def state(self):
         """Return the state of the sensor."""
         return self._state
@@ -148,6 +153,11 @@ class BusScheduleSensor(Entity):
     def unique_id(self):
         """Return a unique ID to use for this sensor."""
         return f"shuttlebus_sensor_{self.route[0]}_{self.index + 1}"
+
+    @property
+    def name(self):
+        """Return the name for this sensor."""
+        return self._name
 
     @property
     def state(self):
