@@ -10,6 +10,11 @@ from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 from homeassistant.helpers.entity import Entity
 from datetime import datetime, timedelta
 import pytz
+import aiohttp
+import json
+import logging
+
+_LOGGER = logging.getLogger(__name__)
 
 
 # Async function to fetch holiday data
@@ -18,7 +23,8 @@ async def fetch_holiday_data():
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as response:
             if response.status == 200:
-                return await response.json()
+                text = await response.text(encoding='utf-8-sig')
+                return json.loads(text)
             else:
                 return None
 
@@ -53,9 +59,6 @@ bus_schedules = {
     }
 }
 
-# Fetch holiday data
-holiday_data = fetch_holiday_data()
-
 # Function to get the next 'n' schedules based on the current time
 def get_next_schedules(route, day_type, current_time, n):
     schedules = bus_schedules[route][day_type]
@@ -66,28 +69,81 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     """Set up the sensor platform."""
     sensors = []
 
+    # Fetch holiday data asynchronously
+    holiday_data = await fetch_holiday_data()
+
+    # Add title sensors
+    sensors.append(BusTitleSensor('b_route', hass, holiday_data))
+    sensors.append(BusTitleSensor('c_route', hass, holiday_data))
+
     # Create 4 sensors for each shuttle route
     for i in range(4):
-        sensors.append(BusScheduleSensor('b_route', i))
-        sensors.append(BusScheduleSensor('c_route', i))
+        sensors.append(BusScheduleSensor('b_route', i, hass, holiday_data))
+        sensors.append(BusScheduleSensor('c_route', i, hass, holiday_data))
 
-    async_add_entities(sensors)
+    async_add_entities(sensors, True)  # The True at the end triggers an update upon entity addition
 
-async def async_update_data():
-    """Fetch new state data for the sensor."""
-    try:
-        bus_schedules = get_bus_schedules()
-        return bus_schedules
-    except Exception as e:
-        _LOGGER.error("An exception occurred while fetching bus schedules: %s", e)
-        return {}
+class BusTitleSensor(SensorEntity):
+    """Sensor for displaying shuttle title with holiday information."""
+
+    def __init__(self, route: str, hass, holiday_data):
+        """Initialize the sensor."""
+        self.route = route
+        self.hass = hass
+        self.holiday_data = holiday_data
+        self._state = "時間"
+        self._name = self.generate_sensor_name()
+        self.schedule_next_update()
+
+    @property
+    def unique_id(self):
+        """Return a unique ID to use for this sensor."""
+        return f"{self.route}_title"
+
+    @property
+    def name(self):
+        """Return the name of the sensor."""
+        return self._name
+
+    @property
+    def state(self):
+        """Return the state of the sensor."""
+        return self._state
+
+    @property
+    def icon(self):
+        """Return the icon to use in the frontend."""
+        return "mdi:bus-clock"
+
+    def generate_sensor_name(self):
+        """Generate the sensor name based on holiday status."""
+        timezone = pytz.timezone('Asia/Hong_Kong')
+        now = datetime.now(timezone)
+        current_date = now.date()
+        holiday_status = "假日" if is_holiday_or_weekend(current_date, self.holiday_data) else "非假日"
+        route_name = "穿梭巴士B線 天鑽至南運路" if self.route == 'b_route' else "穿梭巴士C線 天鑽至大埔延長線"
+        return f"{route_name} {holiday_status}"
+
+    def update(self):
+        """Update the sensor."""
+        self._name = self.generate_sensor_name()
+        self.schedule_next_update()
+
+    def schedule_next_update(self):
+        """Schedule the next update at midnight."""
+        now = datetime.now()
+        next_midnight = datetime.combine(now.date() + timedelta(days=1), datetime.min.time())
+        delay = (next_midnight - now).total_seconds()
+        self.hass.helpers.event.async_call_later(delay, lambda _: self.async_schedule_update_ha_state(True))
 
 class BusScheduleSensor(Entity):
-    def __init__(self, route: str, index: int):
+    def __init__(self, route: str, index: int, hass, holiday_data):
         """Initialize the sensor."""
         super().__init__()
         self.route = route
         self.index = index
+        self.hass = hass
+        self.holiday_data = holiday_data
         self._name = None
         self._state = None
         self._attributes = {'departure_time': None, 'route': self.route, 'is_holiday': False}
@@ -130,7 +186,7 @@ class BusScheduleSensor(Entity):
         current_date = now.date()
 
         # Determine if today is a holiday or non-holiday
-        is_holiday = is_holiday_or_weekend(current_date, holiday_data)
+        is_holiday = is_holiday_or_weekend(current_date, self.holiday_data)
 
         # Fetch the next schedules
         next_schedules = get_next_schedules(self.route, 'holiday' if is_holiday else 'non_holiday', current_time, 4)
