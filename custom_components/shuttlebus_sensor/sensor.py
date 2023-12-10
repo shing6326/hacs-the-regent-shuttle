@@ -107,11 +107,6 @@ class BusTitleSensor(SensorEntity):
         """Return the state of the sensor."""
         return self._state
 
-    @property
-    def icon(self):
-        """Return the icon to use in the frontend."""
-        return "mdi:bus-clock"
-
     def generate_sensor_name(self):
         """Generate the sensor name based on holiday status."""
         timezone = pytz.timezone('Asia/Hong_Kong')
