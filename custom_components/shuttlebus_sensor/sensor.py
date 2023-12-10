@@ -108,7 +108,7 @@ class BusTitleSensor(SensorEntity):
         now = datetime.now(timezone)
         current_date = now.date()
         holiday_status = "假日" if is_holiday_or_weekend(current_date, self.holiday_data) else "非假日"
-        route_name = "B線 天鑽至南運路" if self.route == 'route_b' else "C線 天鑽至大埔延長線"
+        route_name = "天鑽至南運路 B線" if self.route == 'route_b' else "天鑽至大埔延長線 C線"
         return f"{route_name} {holiday_status}"
 
     def update(self):
