@@ -92,18 +92,13 @@ class BusTitleSensor(SensorEntity):
         self.hass = hass
         self.holiday_data = holiday_data
         self._state = "時間"
-        self._name = f"shuttle_{self.route[0]}_title"
+        self._name = None
         self.schedule_next_update()
 
     @property
     def unique_id(self):
         """Return a unique ID to use for this sensor."""
         return f"shuttle_{self.route[0]}_title"
-
-    @property
-    def name(self):
-        """Return the name of the sensor."""
-        return self._name
 
     @property
     def state(self):
@@ -144,7 +139,7 @@ class BusScheduleSensor(Entity):
         self.index = index
         self.hass = hass
         self.holiday_data = holiday_data
-        self._name = f"shuttle_{self.route[0]}_{self.index + 1}"
+        self._name = None
         self._state = None
         self._attributes = {'departure_time': None, 'route': self.route, 'is_holiday': False}
         self._last_update = pytz.utc.localize(datetime.min)
@@ -153,11 +148,6 @@ class BusScheduleSensor(Entity):
     def unique_id(self):
         """Return a unique ID to use for this sensor."""
         return f"shuttle_{self.route[0]}_{self.index + 1}"
-
-    @property
-    def name(self):
-        """Return the name of the sensor."""
-        return self._name
 
     @property
     def state(self):
