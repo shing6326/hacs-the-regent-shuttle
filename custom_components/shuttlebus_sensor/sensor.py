@@ -87,7 +87,7 @@ class BusTitleSensor(SensorEntity):
         self.route = route
         self.hass = hass
         self.holiday_data = holiday_data
-        self._state = "時間"
+        self._state = "時間倒數"
         self._name = None
         self.first_update = True
         self._last_update = pytz.utc.localize(datetime.min)
