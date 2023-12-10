@@ -6,6 +6,7 @@ from homeassistant.components.sensor import (
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
+from homeassistant.helpers.entity import generate_entity_id
 
 from homeassistant.helpers.entity import Entity
 from datetime import datetime, timedelta
@@ -89,13 +90,8 @@ class BusTitleSensor(SensorEntity):
         self.holiday_data = holiday_data
         self._state = "時間倒數"
         self._name = None
-        self.first_update = True
+        self.entity_id = generate_entity_id("sensor.{}", "shuttlebus_{self.route[0]}_title")
         self._last_update = pytz.utc.localize(datetime.min)
-
-    @property
-    def unique_id(self):
-        """Return a unique ID to use for this sensor."""
-        return f"shuttlebus_sensor_{self.route[0]}_title"
 
     @property
     def name(self):
@@ -118,11 +114,6 @@ class BusTitleSensor(SensorEntity):
 
     def update(self):
         """Update the sensor."""
-        # try to block the first minute update for the entity name so that the name would not override the unique id
-        if self.first_update:
-            self.hass.helpers.event.async_call_later(60, lambda _: self.async_schedule_update_ha_state(True))
-            self.first_update = False
-            return
         self._name = self.generate_sensor_name()
         self.schedule_next_update()
 
@@ -142,15 +133,10 @@ class BusScheduleSensor(Entity):
         self.hass = hass
         self.holiday_data = holiday_data
         self._name = None
+        self.entity_id = generate_entity_id("sensor.{}", "shuttlebus_{self.route[0]}_{self.index + 1}")
         self._state = None
         self._attributes = {'departure_time': None, 'route': self.route, 'is_holiday': False}
-        self.first_update = True
         self._last_update = pytz.utc.localize(datetime.min)
-
-    @property
-    def unique_id(self):
-        """Return a unique ID to use for this sensor."""
-        return f"shuttlebus_sensor_{self.route[0]}_{self.index + 1}"
 
     @property
     def name(self):
@@ -177,12 +163,6 @@ class BusScheduleSensor(Entity):
         return True
 
     def update(self):
-        # try to block the first minute update for the entity name so that the name would not override the unique id
-        if self.first_update:
-            self.hass.helpers.event.async_call_later(60, lambda _: self.async_schedule_update_ha_state(True))
-            self.first_update = False
-            return
-
         """Fetch new state data for the sensor."""
         timezone = pytz.timezone('Asia/Hong_Kong')
         now = datetime.now(timezone)
