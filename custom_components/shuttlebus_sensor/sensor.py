@@ -132,6 +132,7 @@ class BusScheduleSensor(Entity):
         self.hass = hass
         self.holiday_data = holiday_data
         self._name = None
+        self._icon = None
         self.entity_id = f"sensor.shuttlebus_{self.route}_{self.index + 1}"
         self._state = None
         self._attributes = {'departure_time': None, 'route': self.route, 'is_holiday': False}
@@ -150,7 +151,7 @@ class BusScheduleSensor(Entity):
     @property
     def icon(self):
         """Return the icon to use in the frontend."""
-        return "mdi:bus"
+        return self._icon
 
     @property
     def extra_state_attributes(self):
@@ -192,6 +193,7 @@ class BusScheduleSensor(Entity):
             self._attributes['departure_time'] = schedule_time_str
             self._attributes['route'] = self.route.upper()[-1]  # 'B' or 'C'
             self._attributes['is_holiday'] = is_holiday
+            self._icon = "mdi:bus"
 
             # Format the state display
             if seconds_diff <= 0:
@@ -199,13 +201,17 @@ class BusScheduleSensor(Entity):
             elif seconds_diff <= 60:  # Less than 1 minute
                 self._state = "<1 分鐘"
             elif seconds_diff <= 3600:  # Less than 1 hour
-                self._state = f"{int(seconds_diff // 60)} 分鐘"
+                self._state = f"{int(seconds_diff // 60)}分鐘"
             else:  # Longer than 1 hour
                 hours = int(seconds_diff // 3600)
                 minutes = int((seconds_diff % 3600) // 60)
-                self._state = f"{hours} 小時 {minutes} 分鐘"
+                self._state = f"{hours}:{minutes:02}小時"
         else:
-            self._state = ''
+            # No more schedules for the day
+            self._name = None  # Clear the name
+            self._state = None  # Clear the state
+            self._attributes = {}
+            self._icon = None
 
         # Schedule the next update
         self.schedule_next_update()
