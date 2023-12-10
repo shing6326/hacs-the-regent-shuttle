@@ -7,21 +7,23 @@ from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 
-# Import other necessary modules and functions (like datetime, pytz, requests, etc.)
-import requests
+import aiohttp
+import asyncio
 from datetime import datetime
 import pytz
 
-# Function to fetch holiday data
-def fetch_holiday_data():
+# Async function to fetch holiday data
+async def fetch_holiday_data():
     url = 'https://www.1823.gov.hk/common/ical/en.json'
-    response = requests.get(url)
-    if response.status_code == 200:
-        return response.json()
-    else:
-        return None
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as response:
+            if response.status == 200:
+                return await response.json()
+            else:
+                return None
 
 # Function to check if a given date is a holiday or a weekend (Saturday or Sunday)
+# This remains a synchronous function
 def is_holiday_or_weekend(date, holiday_data):
     # Check if the day is Saturday or Sunday
     if date.weekday() == 5 or date.weekday() == 6:  # 5 is Saturday, 6 is Sunday
@@ -53,9 +55,6 @@ bus_schedules = {
 
 # Fetch holiday data
 holiday_data = fetch_holiday_data()
-if holiday_data is None:
-    print("Failed to fetch holiday data")
-    return
 
 # Function to get the next 'n' schedules based on the current time
 def get_next_schedules(route, day_type, current_time, n):
@@ -63,44 +62,48 @@ def get_next_schedules(route, day_type, current_time, n):
     future_schedules = [time for time in schedules if time[0] > current_time]
     return future_schedules[:n]
 
-def setup_platform(
+async def setup_platform(
     hass: HomeAssistant,
     config: ConfigType,
     add_entities: AddEntitiesCallback,
     discovery_info: DiscoveryInfoType | None = None
 ) -> None:
     """Set up the sensor platform."""
+    # Fetch holiday data asynchronously
+    holiday_data = await fetch_holiday_data()
 
     # Add entities for shuttle B and C schedules
     for i in range(4):
-        add_entities([ShuttleSensor(route='b_route', index=i)])
-        add_entities([ShuttleSensor(route='c_route', index=i)])
-
+        add_entities([ShuttleSensor(hass, route='b_route', index=i, holiday_data=holiday_data)])
+        add_entities([ShuttleSensor(hass, route='c_route', index=i, holiday_data=holiday_data)])
 
 class ShuttleSensor(SensorEntity):
     """Representation of a Shuttle Schedule Sensor."""
 
-    def __init__(self, route, index):
+    def __init__(self, hass, route, index, holiday_data):
+        self.hass = hass
         self._route = route
         self._index = index
+        self._holiday_data = holiday_data
         self._attr_name = f"shuttle_{self._route[0]}_{self._index + 1}"
         self._attr_state_class = SensorStateClass.MEASUREMENT
         self._attr_native_value = None
 
-    def update(self) -> None:
-        """Fetch new state data for the sensor.
-
-        This is the only method that should fetch new data for Home Assistant.
-        """
+    async def async_update(self) -> None:
+        """Fetch new state data for the sensor asynchronously."""
         # Determine if today is a holiday or non-holiday
         timezone = pytz.timezone('Asia/Hong_Kong')  # Hong Kong timezone
         current_datetime = datetime.now(timezone)
-        current_time = current_datetime.strftime('%H:%M')
         current_date = current_datetime.date()
-        
-        day_type = 'holiday' if is_holiday_or_weekend(current_date, holiday_data) else 'non_holiday'
+
+        # Use Home Assistant's async_add_executor_job to run the synchronous function
+        day_type = await self.hass.async_add_executor_job(
+            is_holiday_or_weekend, current_date, self._holiday_data
+        )
 
         # Get the next 'n' schedules for the route
+        # Note: get_next_schedules can remain synchronous as it does not perform IO
+        current_time = current_datetime.strftime('%H:%M')
         schedules = get_next_schedules(self._route, day_type, current_time, 4)
 
         # Update the sensor's state with the appropriate schedule
