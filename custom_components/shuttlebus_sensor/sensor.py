@@ -8,13 +8,9 @@ from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
 
 from homeassistant.helpers.entity import Entity
-from homeassistant.util import Throttle
-from datetime import timedelta
-
-import aiohttp
-import asyncio
-from datetime import datetime
+from datetime import datetime, timedelta
 import pytz
+
 
 # Async function to fetch holiday data
 async def fetch_holiday_data():
@@ -79,12 +75,6 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
 
 async def async_update_data():
     """Fetch new state data for the sensor."""
-
-    # Your logic to get bus schedules
-    # You will need to implement get_bus_schedules() that returns a dictionary
-    # with keys 'b_route' and 'c_route', each containing a list of schedules
-    # Example: {'b_route': ['06:35', '06:45', ...], 'c_route': ['09:15', '10:15', ...]}
-
     try:
         bus_schedules = get_bus_schedules()
         return bus_schedules
@@ -93,14 +83,14 @@ async def async_update_data():
         return {}
 
 class BusScheduleSensor(Entity):
-    """Representation of a Bus Schedule Sensor."""
-
     def __init__(self, route: str, index: int):
         """Initialize the sensor."""
+        super().__init__()
         self.route = route
         self.index = index
         self._state = None
         self._attributes = {}
+        self._last_update = pytz.utc.localize(datetime.min)
 
     @property
     def unique_id(self):
@@ -122,14 +112,17 @@ class BusScheduleSensor(Entity):
         """Return the icon to use in the frontend."""
         return "mdi:bus"
 
-    @Throttle(timedelta(minutes=1))
+    def should_poll(self):
+        """Sensor should be polled."""
+        return True
+
     def update(self):
         """Fetch new state data for the sensor."""
         # Determine current time and date type
-        timezone = pytz.timezone('Asia/Hong_Kong')  # Replace with your timezone
-        current_datetime = datetime.now(timezone)
-        current_time = current_datetime.strftime('%H:%M')
-        current_date = current_datetime.date()
+        timezone = pytz.timezone('Asia/Hong_Kong')
+        now = datetime.now(timezone)
+        current_time = now.strftime('%H:%M')
+        current_date = now.date()
 
         # Determine if today is a holiday or non-holiday
         day_type = 'holiday' if is_holiday_or_weekend(current_date, holiday_data) else 'non_holiday'
@@ -137,8 +130,40 @@ class BusScheduleSensor(Entity):
         # Fetch the next schedules
         next_schedules = get_next_schedules(self.route, day_type, current_time, 4)
 
-        # Update the sensor's state with the appropriate schedule
         if len(next_schedules) > self.index:
-            self._state = next_schedules[self.index][0]
+            schedule_time_str = next_schedules[self.index][0]
+            schedule_time_naive = datetime.strptime(schedule_time_str, '%H:%M')
+            schedule_time = now.replace(hour=schedule_time_naive.hour, minute=schedule_time_naive.minute, second=0, microsecond=0)
+
+            # If the schedule time is earlier than now, assume it's for the next day
+            if schedule_time < now:
+                schedule_time += timedelta(days=1)
+
+            # Calculate the time difference
+            time_diff = schedule_time - now
+            seconds_diff = time_diff.total_seconds()
+
+            # Format the state display
+            if seconds_diff <= 0:
+                self._state = '已開出'
+            elif seconds_diff <= 60:  # Less than 1 minute
+                self._state = "<1 分鐘"
+            elif seconds_diff <= 3600:  # Less than 1 hour
+                self._state = f"{int(seconds_diff // 60)} 分鐘"
+            else:  # Longer than 1 hour
+                hours = int(seconds_diff // 3600)
+                minutes = int((seconds_diff % 3600) // 60)
+                self._state = f"{hours} 小時 {minutes} 分鐘"
         else:
-            self._state = 'No more schedules today'
+            self._state = ''
+
+        # Schedule the next update
+        self.schedule_next_update()
+
+    def schedule_next_update(self):
+        """Schedule the next update at the start of the next minute."""
+        now = datetime.now(pytz.timezone('Asia/Hong_Kong'))
+        next_minute = (now + timedelta(minutes=1)).replace(second=0, microsecond=0)
+        delay = (next_minute - now).total_seconds()
+        # Use Home Assistant's event loop to schedule the next update
+        self.hass.helpers.event.async_call_later(delay, lambda _: self.async_schedule_update_ha_state(True))
