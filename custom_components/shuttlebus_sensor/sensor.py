@@ -13,6 +13,27 @@ import pytz
 import aiohttp
 import json
 
+timezone = pytz.timezone('Asia/Hong_Kong')
+
+bus_schedules = {
+    "route_b": {
+        "non_holiday": [
+            ('06:35', 'B線'), ('06:35', 'B線 9座開出'), ('06:45', 'B線'), ('06:55', 'B線'), ('06:55', 'B線 9座開出'), ('07:05', '9座 開出'), ('07:10', 'B線'), ('07:15', 'B線'), ('07:20', 'B線'), ('07:20', 'B線 9座開出'), ('07:30', 'B線 9座開出'), ('07:35', 'B線'), ('07:40', 'B線'), ('07:45', 'B線'), ('07:50', 'B線 9座開出'), ('07:55', 'B線 9座開出'), ('08:00', 'B線'), ('08:05', 'B線'), ('08:10', 'B線'), ('08:20', 'B線 9座開出'), ('08:25', 'B線'), ('08:30', 'B線'), ('08:35', 'B線'), ('08:45', 'B線 9座開出'), ('08:50', 'B線'), ('08:55', 'B線'), ('09:05', 'B線'), ('09:15', 'B線'), ('09:25', 'B線'), ('09:35', 'B線'), ('09:45', 'B線'), ('09:55', 'B線'), ('10:05', 'B線'), ('10:20', 'B線'), ('10:35', 'B線'), ('10:50', 'B線'), ('11:05', 'B線'), ('11:20', 'B線'), ('11:35', 'B線'), ('11:50', 'B線'), ('12:05', 'B線'), ('12:20', 'B線'), ('12:35', 'B線'), ('12:50', 'B線'), ('13:05', 'B線'), ('13:20', 'B線'), ('13:30', 'B線'), ('13:40', 'B線'), ('13:50', 'B線'), ('14:00', 'B線'), ('14:10', 'B線'), ('14:20', 'B線'), ('14:30', 'B線'), ('14:40', 'B線'), ('14:50', 'B線'), ('15:00', 'B線'), ('15:10', 'B線'), ('15:20', 'B線'), ('15:30', 'B線'), ('15:40', 'B線'), ('15:50', 'B線'), ('16:00', 'B線'), ('16:10', 'B線'), ('16:20', 'B線'), ('16:30', 'B線'), ('16:40', 'B線'), ('16:55', 'B線'), ('17:10', 'B線'), ('17:20', 'B線'), ('17:35', 'B線'), ('17:45', 'B線'), ('18:00', 'B線'), ('18:10', 'B線'), ('18:20', 'B線'), ('18:25', 'B線'), ('18:35', 'B線'), ('18:45', 'B線'), ('18:50', 'B線'), ('19:00', 'B線'), ('19:10', 'B線'), ('19:15', 'B線'), ('19:25', 'B線'), ('19:35', 'B線'), ('19:40', 'B線'), ('19:50', 'B線'), ('20:05', 'B線'), ('20:15', 'B線'), ('20:30', 'B線'), ('20:40', 'B線'), ('20:55', 'B線'), ('21:05', 'B線'), ('21:20', 'B線'), ('21:30', 'B線'), ('21:45', 'B線'), ('21:55', 'B線'), ('22:10', 'B線'), ('22:20', 'B線'), ('22:30', 'B線'), ('22:40', 'B線'), ('22:50', 'B線'), ('23:00', 'B線'), ('23:15', 'B線 停全座')
+        ],
+        "holiday": [
+            ('06:35', 'B線'), ('06:45', 'B線'), ('06:55', 'B線'), ('07:05', 'B線'), ('07:15', 'B線'), ('07:25', 'B線'), ('07:35', 'B線'), ('07:45', 'B線'), ('07:55', 'B線'), ('08:05', 'B線'), ('08:15', 'B線'), ('08:25', 'B線'), ('08:35', 'B線'), ('08:45', 'B線'), ('08:55', 'B線'), ('09:05', 'B線'), ('09:15', 'B線'), ('09:25', 'B線'), ('09:35', 'B線'), ('09:45', 'B線'), ('10:00', 'B線'), ('10:15', 'B線'), ('10:30', 'B線'), ('10:45', 'B線'), ('11:00', 'B線'), ('11:15', 'B線'), ('11:30', 'B線'), ('11:45', 'B線'), ('12:00', 'B線'), ('12:10', 'B線'), ('12:15', 'B線'), ('12:25', 'B線'), ('12:35', 'B線'), ('12:45', 'B線'), ('12:55', 'B線'), ('13:00', 'B線'), ('13:10', 'B線'), ('13:20', 'B線'), ('13:25', 'B線'), ('13:35', 'B線'), ('13:45', 'B線'), ('13:50', 'B線'), ('14:00', 'B線'), ('14:15', 'B線'), ('14:25', 'B線'), ('14:40', 'B線'), ('14:55', 'B線'), ('15:10', 'B線'), ('15:25', 'B線'), ('15:40', 'B線'), ('15:50', 'B線'), ('16:00', 'B線'), ('16:10', 'B線'), ('16:20', 'B線'), ('16:30', 'B線'), ('16:40', 'B線'), ('16:50', 'B線'), ('17:00', 'B線'), ('17:10', 'B線'), ('17:20', 'B線'), ('17:25', 'B線'), ('17:35', 'B線'), ('17:45', 'B線'), ('17:50', 'B線'), ('18:00', 'B線'), ('18:10', 'B線'), ('18:15', 'B線'), ('18:25', 'B線'), ('18:35', 'B線'), ('18:40', 'B線'), ('18:50', 'B線'), ('19:05', 'B線'), ('19:15', 'B線'), ('19:30', 'B線'), ('19:40', 'B線'), ('19:55', 'B線'), ('20:05', 'B線'), ('20:20', 'B線'), ('20:30', 'B線'), ('20:45', 'B線'), ('20:55', 'B線'), ('21:10', 'B線'), ('21:20', 'B線'), ('21:35', 'B線'), ('21:45', 'B線'), ('21:55', 'B線'), ('22:05', 'B線'), ('22:15', 'B線'), ('22:25', 'B線'), ('22:35', 'B線'), ('22:45', 'B線'), ('23:00', 'B線'), ('23:15', 'B線 停全座')
+        ]
+    },
+    "route_c": {
+        "non_holiday": [
+            ('09:15', 'C線 9座開出'), ('10:15', 'C線 9座開出'), ('11:15', 'C線 9座開出'), ('12:15', 'C線 9座開出'), ('13:15', 'C線 9座開出'), ('14:15', 'C線 9座開出'), ('15:15', 'C線 9座開出'), ('16:15', 'C線 9座開出'), ('17:15', 'C線 9座開出'), ('20:15', 'C線 9座開出'), ('21:15', 'C線 9座開出'), ('22:15', 'C線 9座開出')
+        ],
+        "holiday": [
+            ('06:30', 'C線 9座開出'), ('07:30', 'C線 9座開出'), ('08:30', 'C線 9座開出'), ('09:30', 'C線 9座開出'), ('10:30', 'C線 9座開出'), ('11:30', 'C線 9座開出'), ('14:30', 'C線 9座開出'), ('15:30', 'C線 9座開出'), ('16:30', 'C線 9座開出'), ('19:30', 'C線 9座開出'), ('20:30', 'C線 9座開出'), ('21:30', 'C線 9座開出'), ('22:30', 'C線 9座開出')
+        ]
+    }
+}
+
 # Async function to fetch holiday data
 async def fetch_holiday_data():
     url = 'https://www.1823.gov.hk/common/ical/en.json'
@@ -35,25 +56,6 @@ def is_holiday_or_weekend(date, holiday_data):
         if date == datetime.strptime(event['dtstart'][0], '%Y%m%d').date():
             return True
     return False
-
-bus_schedules = {
-    "route_b": {
-        "non_holiday": [
-            ('06:35', 'B線'), ('06:35', 'B線 9座開出'), ('06:45', 'B線'), ('06:55', 'B線'), ('06:55', 'B線 9座開出'), ('07:05', '9座 開出'), ('07:10', 'B線'), ('07:15', 'B線'), ('07:20', 'B線'), ('07:20', 'B線 9座開出'), ('07:30', 'B線 9座開出'), ('07:35', 'B線'), ('07:40', 'B線'), ('07:45', 'B線'), ('07:50', 'B線 9座開出'), ('07:55', 'B線 9座開出'), ('08:00', 'B線'), ('08:05', 'B線'), ('08:10', 'B線'), ('08:20', 'B線 9座開出'), ('08:25', 'B線'), ('08:30', 'B線'), ('08:35', 'B線'), ('08:45', 'B線 9座開出'), ('08:50', 'B線'), ('08:55', 'B線'), ('09:05', 'B線'), ('09:15', 'B線'), ('09:25', 'B線'), ('09:35', 'B線'), ('09:45', 'B線'), ('09:55', 'B線'), ('10:05', 'B線'), ('10:20', 'B線'), ('10:35', 'B線'), ('10:50', 'B線'), ('11:05', 'B線'), ('11:20', 'B線'), ('11:35', 'B線'), ('11:50', 'B線'), ('12:05', 'B線'), ('12:20', 'B線'), ('12:35', 'B線'), ('12:50', 'B線'), ('13:05', 'B線'), ('13:20', 'B線'), ('13:30', 'B線'), ('13:40', 'B線'), ('13:50', 'B線'), ('14:00', 'B線'), ('14:10', 'B線'), ('14:20', 'B線'), ('14:30', 'B線'), ('14:40', 'B線'), ('14:50', 'B線'), ('15:00', 'B線'), ('15:10', 'B線'), ('15:20', 'B線'), ('15:30', 'B線'), ('15:40', 'B線'), ('15:50', 'B線'), ('16:00', 'B線'), ('16:10', 'B線'), ('16:20', 'B線'), ('16:30', 'B線'), ('16:40', 'B線'), ('16:55', 'B線'), ('17:10', 'B線'), ('17:20', 'B線'), ('17:35', 'B線'), ('17:45', 'B線'), ('18:00', 'B線'), ('18:10', 'B線'), ('18:20', 'B線'), ('18:25', 'B線'), ('18:35', 'B線'), ('18:45', 'B線'), ('18:50', 'B線'), ('19:00', 'B線'), ('19:10', 'B線'), ('19:15', 'B線'), ('19:25', 'B線'), ('19:35', 'B線'), ('19:40', 'B線'), ('19:50', 'B線'), ('20:05', 'B線'), ('20:15', 'B線'), ('20:30', 'B線'), ('20:40', 'B線'), ('20:55', 'B線'), ('21:05', 'B線'), ('21:20', 'B線'), ('21:30', 'B線'), ('21:45', 'B線'), ('21:55', 'B線'), ('22:10', 'B線'), ('22:20', 'B線'), ('22:30', 'B線'), ('22:40', 'B線'), ('22:50', 'B線'), ('23:00', 'B線'), ('23:15', 'B線 尾班車 停全座')
-        ],
-        "holiday": [
-            ('06:35', 'B線'), ('06:45', 'B線'), ('06:55', 'B線'), ('07:05', 'B線'), ('07:15', 'B線'), ('07:25', 'B線'), ('07:35', 'B線'), ('07:45', 'B線'), ('07:55', 'B線'), ('08:05', 'B線'), ('08:15', 'B線'), ('08:25', 'B線'), ('08:35', 'B線'), ('08:45', 'B線'), ('08:55', 'B線'), ('09:05', 'B線'), ('09:15', 'B線'), ('09:25', 'B線'), ('09:35', 'B線'), ('09:45', 'B線'), ('10:00', 'B線'), ('10:15', 'B線'), ('10:30', 'B線'), ('10:45', 'B線'), ('11:00', 'B線'), ('11:15', 'B線'), ('11:30', 'B線'), ('11:45', 'B線'), ('12:00', 'B線'), ('12:10', 'B線'), ('12:15', 'B線'), ('12:25', 'B線'), ('12:35', 'B線'), ('12:45', 'B線'), ('12:55', 'B線'), ('13:00', 'B線'), ('13:10', 'B線'), ('13:20', 'B線'), ('13:25', 'B線'), ('13:35', 'B線'), ('13:45', 'B線'), ('13:50', 'B線'), ('14:00', 'B線'), ('14:15', 'B線'), ('14:25', 'B線'), ('14:40', 'B線'), ('14:55', 'B線'), ('15:10', 'B線'), ('15:25', 'B線'), ('15:40', 'B線'), ('15:50', 'B線'), ('16:00', 'B線'), ('16:10', 'B線'), ('16:20', 'B線'), ('16:30', 'B線'), ('16:40', 'B線'), ('16:50', 'B線'), ('17:00', 'B線'), ('17:10', 'B線'), ('17:20', 'B線'), ('17:25', 'B線'), ('17:35', 'B線'), ('17:45', 'B線'), ('17:50', 'B線'), ('18:00', 'B線'), ('18:10', 'B線'), ('18:15', 'B線'), ('18:25', 'B線'), ('18:35', 'B線'), ('18:40', 'B線'), ('18:50', 'B線'), ('19:05', 'B線'), ('19:15', 'B線'), ('19:30', 'B線'), ('19:40', 'B線'), ('19:55', 'B線'), ('20:05', 'B線'), ('20:20', 'B線'), ('20:30', 'B線'), ('20:45', 'B線'), ('20:55', 'B線'), ('21:10', 'B線'), ('21:20', 'B線'), ('21:35', 'B線'), ('21:45', 'B線'), ('21:55', 'B線'), ('22:05', 'B線'), ('22:15', 'B線'), ('22:25', 'B線'), ('22:35', 'B線'), ('22:45', 'B線'), ('23:00', 'B線'), ('23:15', 'B線 尾班車 停全座')
-        ]
-    },
-    "route_c": {
-        "non_holiday": [
-            ('09:15', 'C線 9座開出'), ('10:15', 'C線 9座開出'), ('11:15', 'C線 9座開出'), ('12:15', 'C線 9座開出'), ('13:15', 'C線 9座開出'), ('14:15', 'C線 9座開出'), ('15:15', 'C線 9座開出'), ('16:15', 'C線 9座開出'), ('17:15', 'C線 9座開出'), ('20:15', 'C線 9座開出'), ('21:15', 'C線 9座開出'), ('22:15', 'C線 尾班車 9座開出')
-        ],
-        "holiday": [
-            ('06:30', 'C線 9座開出'), ('07:30', 'C線 9座開出'), ('08:30', 'C線 9座開出'), ('09:30', 'C線 9座開出'), ('10:30', 'C線 9座開出'), ('11:30', 'C線 9座開出'), ('14:30', 'C線 9座開出'), ('15:30', 'C線 9座開出'), ('16:30', 'C線 9座開出'), ('19:30', 'C線 9座開出'), ('20:30', 'C線 9座開出'), ('21:30', 'C線 9座開出'), ('22:30', 'C線 尾班車 9座開出')
-        ]
-    }
-}
 
 # Function to get the next 'n' schedules based on the current time
 def get_next_schedules(route, day_type, current_time, n):
@@ -87,10 +89,9 @@ class BusTitleSensor(SensorEntity):
         self.route = route
         self.hass = hass
         self.holiday_data = holiday_data
-        self._state = "剩餘時間"
         self._name = None
         self.entity_id = f"sensor.shuttlebus_{self.route}_title"
-        self._last_update = pytz.utc.localize(datetime.min)
+        self.update()
 
     @property
     def name(self):
@@ -100,15 +101,18 @@ class BusTitleSensor(SensorEntity):
     @property
     def state(self):
         """Return the state of the sensor."""
-        return self._state
+        return "班次"
+
+    def should_poll(self):
+        """Sensor should not be polled."""
+        return False
 
     def generate_sensor_name(self):
         """Generate the sensor name based on holiday status."""
-        timezone = pytz.timezone('Asia/Hong_Kong')
         now = datetime.now(timezone)
         current_date = now.date()
+        route_name = "南運路" if self.route == 'route_b' else "大埔延長線"
         holiday_status = "假日" if is_holiday_or_weekend(current_date, self.holiday_data) else "非假日"
-        route_name = "天鑽至南運路 B線" if self.route == 'route_b' else "天鑽至大埔延長線 C線"
         return f"{route_name} {holiday_status}"
 
     def update(self):
@@ -118,7 +122,7 @@ class BusTitleSensor(SensorEntity):
 
     def schedule_next_update(self):
         """Schedule the next update at midnight."""
-        now = datetime.now()
+        now = datetime.now(timezone)
         next_midnight = datetime.combine(now.date() + timedelta(days=1), datetime.min.time())
         delay = (next_midnight - now).total_seconds()
         self.hass.helpers.event.async_call_later(delay, lambda _: self.async_schedule_update_ha_state(True))
@@ -126,17 +130,16 @@ class BusTitleSensor(SensorEntity):
 class BusScheduleSensor(Entity):
     def __init__(self, route: str, index: int, hass, holiday_data):
         """Initialize the sensor."""
-        super().__init__()
         self.route = route
         self.index = index
         self.hass = hass
         self.holiday_data = holiday_data
         self._name = None
         self._icon = None
-        self.entity_id = f"sensor.shuttlebus_{self.route}_{self.index + 1}"
         self._state = None
-        self._attributes = {'departure_time': None, 'route': self.route, 'is_holiday': False}
-        self._last_update = pytz.utc.localize(datetime.min)
+        self._attributes = {}
+        self.entity_id = f"sensor.shuttlebus_{self.route}_{self.index + 1}"
+        self.update()
 
     @property
     def name(self):
@@ -159,12 +162,11 @@ class BusScheduleSensor(Entity):
         return self._attributes
 
     def should_poll(self):
-        """Sensor should be polled."""
-        return True
+        """Sensor should not be polled."""
+        return False
 
     def update(self):
         """Fetch new state data for the sensor."""
-        timezone = pytz.timezone('Asia/Hong_Kong')
         now = datetime.now(timezone)
         current_time = now.strftime('%H:%M')
         current_date = now.date()
@@ -177,7 +179,6 @@ class BusScheduleSensor(Entity):
 
         if len(next_schedules) > self.index:
             schedule_time_str, schedule_name = next_schedules[self.index]
-            self._name = schedule_name
             schedule_time_naive = datetime.strptime(schedule_time_str, '%H:%M')
             schedule_time = now.replace(hour=schedule_time_naive.hour, minute=schedule_time_naive.minute, second=0, microsecond=0)
 
@@ -190,10 +191,11 @@ class BusScheduleSensor(Entity):
             seconds_diff = time_diff.total_seconds()
 
             # Update attributes
+            self._name = schedule_name
+            self._icon = "mdi:bus"
             self._attributes['departure_time'] = schedule_time_str
             self._attributes['route'] = self.route.upper()[-1]  # 'B' or 'C'
             self._attributes['is_holiday'] = is_holiday
-            self._icon = "mdi:bus"
 
             # Format the state display
             if seconds_diff <= 0:
@@ -210,15 +212,15 @@ class BusScheduleSensor(Entity):
             # No more schedules for the day
             self._name = None  # Clear the name
             self._state = None  # Clear the state
-            self._attributes = {}
             self._icon = None
+            self._attributes = {}
 
         # Schedule the next update
         self.schedule_next_update()
 
     def schedule_next_update(self):
         """Schedule the next update at the start of the next minute."""
-        now = datetime.now(pytz.timezone('Asia/Hong_Kong'))
+        now = datetime.now(timezone)
         next_minute = (now + timedelta(minutes=1)).replace(second=0, microsecond=0)
         delay = (next_minute - now).total_seconds()
         # Use Home Assistant's event loop to schedule the next update
