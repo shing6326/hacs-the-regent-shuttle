@@ -15,12 +15,18 @@ import json
 
 timezone = pytz.timezone('Asia/Hong_Kong')
 
-bus_schedule = {
-    ('b', False): {'description': '南運路 非假日', 'schedule': [{'time': '06:35', 'info': 'B線'}, {'time': '06:35', 'info': 'B線 9座開出'}, {'time': '06:45', 'info': 'B線'}, {'time': '06:55', 'info': 'B線'}, {'time': '06:55', 'info': 'B線 9座開出'}, {'time': '07:05', 'info': '9座 開出'}, {'time': '07:10', 'info': 'B線'}, {'time': '07:15', 'info': 'B線'}, {'time': '07:20', 'info': 'B線'}, {'time': '07:20', 'info': 'B線 9座開出'}, {'time': '07:30', 'info': 'B線 9座開出'}, {'time': '07:35', 'info': 'B線'}, {'time': '07:40', 'info': 'B線'}, {'time': '07:45', 'info': 'B線'}, {'time': '07:50', 'info': 'B線 9座開出'}, {'time': '07:55', 'info': 'B線 9座開出'}, {'time': '08:00', 'info': 'B線'}, {'time': '08:05', 'info': 'B線'}, {'time': '08:10', 'info': 'B線'}, {'time': '08:20', 'info': 'B線 9座開出'}, {'time': '08:25', 'info': 'B線'}, {'time': '08:30', 'info': 'B線'}, {'time': '08:35', 'info': 'B線'}, {'time': '08:45', 'info': 'B線 9座開出'}, {'time': '08:50', 'info': 'B線'}, {'time': '08:55', 'info': 'B線'}, {'time': '09:05', 'info': 'B線'}, {'time': '09:15', 'info': 'B線'}, {'time': '09:25', 'info': 'B線'}, {'time': '09:35', 'info': 'B線'}, {'time': '09:45', 'info': 'B線'}, {'time': '09:55', 'info': 'B線'}, {'time': '10:05', 'info': 'B線'}, {'time': '10:20', 'info': 'B線'}, {'time': '10:35', 'info': 'B線'}, {'time': '10:50', 'info': 'B線'}, {'time': '11:05', 'info': 'B線'}, {'time': '11:20', 'info': 'B線'}, {'time': '11:35', 'info': 'B線'}, {'time': '11:50', 'info': 'B線'}, {'time': '12:05', 'info': 'B線'}, {'time': '12:20', 'info': 'B線'}, {'time': '12:35', 'info': 'B線'}, {'time': '12:50', 'info': 'B線'}, {'time': '13:05', 'info': 'B線'}, {'time': '13:20', 'info': 'B線'}, {'time': '13:30', 'info': 'B線'}, {'time': '13:40', 'info': 'B線'}, {'time': '13:50', 'info': 'B線'}, {'time': '14:00', 'info': 'B線'}, {'time': '14:10', 'info': 'B線'}, {'time': '14:20', 'info': 'B線'}, {'time': '14:30', 'info': 'B線'}, {'time': '14:40', 'info': 'B線'}, {'time': '14:50', 'info': 'B線'}, {'time': '15:00', 'info': 'B線'}, {'time': '15:10', 'info': 'B線'}, {'time': '15:20', 'info': 'B線'}, {'time': '15:30', 'info': 'B線'}, {'time': '15:40', 'info': 'B線'}, {'time': '15:50', 'info': 'B線'}, {'time': '16:00', 'info': 'B線'}, {'time': '16:10', 'info': 'B線'}, {'time': '16:20', 'info': 'B線'}, {'time': '16:30', 'info': 'B線'}, {'time': '16:40', 'info': 'B線'}, {'time': '16:55', 'info': 'B線'}, {'time': '17:10', 'info': 'B線'}, {'time': '17:20', 'info': 'B線'}, {'time': '17:35', 'info': 'B線'}, {'time': '17:45', 'info': 'B線'}, {'time': '18:00', 'info': 'B線'}, {'time': '18:10', 'info': 'B線'}, {'time': '18:20', 'info': 'B線'}, {'time': '18:25', 'info': 'B線'}, {'time': '18:35', 'info': 'B線'}, {'time': '18:45', 'info': 'B線'}, {'time': '18:50', 'info': 'B線'}, {'time': '19:00', 'info': 'B線'}, {'time': '19:10', 'info': 'B線'}, {'time': '19:15', 'info': 'B線'}, {'time': '19:25', 'info': 'B線'}, {'time': '19:35', 'info': 'B線'}, {'time': '19:40', 'info': 'B線'}, {'time': '19:50', 'info': 'B線'}, {'time': '20:05', 'info': 'B線'}, {'time': '20:15', 'info': 'B線'}, {'time': '20:30', 'info': 'B線'}, {'time': '20:40', 'info': 'B線'}, {'time': '20:55', 'info': 'B線'}, {'time': '21:05', 'info': 'B線'}, {'time': '21:20', 'info': 'B線'}, {'time': '21:30', 'info': 'B線'}, {'time': '21:45', 'info': 'B線'}, {'time': '21:55', 'info': 'B線'}, {'time': '22:10', 'info': 'B線'}, {'time': '22:20', 'info': 'B線'}, {'time': '22:30', 'info': 'B線'}, {'time': '22:40', 'info': 'B線'}, {'time': '22:50', 'info': 'B線'}, {'time': '23:00', 'info': 'B線'}, {'time': '23:15', 'info': 'B線 停全座'}]},
-    ('b', True): {'description': '南運路 假日', 'schedule': [{'time': '06:35', 'info': 'B線'}, {'time': '06:45', 'info': 'B線'}, {'time': '06:55', 'info': 'B線'}, {'time': '07:05', 'info': 'B線'}, {'time': '07:15', 'info': 'B線'}, {'time': '07:25', 'info': 'B線'}, {'time': '07:35', 'info': 'B線'}, {'time': '07:45', 'info': 'B線'}, {'time': '07:55', 'info': 'B線'}, {'time': '08:05', 'info': 'B線'}, {'time': '08:15', 'info': 'B線'}, {'time': '08:25', 'info': 'B線'}, {'time': '08:35', 'info': 'B線'}, {'time': '08:45', 'info': 'B線'}, {'time': '08:55', 'info': 'B線'}, {'time': '09:05', 'info': 'B線'}, {'time': '09:15', 'info': 'B線'}, {'time': '09:25', 'info': 'B線'}, {'time': '09:35', 'info': 'B線'}, {'time': '09:45', 'info': 'B線'}, {'time': '10:00', 'info': 'B線'}, {'time': '10:15', 'info': 'B線'}, {'time': '10:30', 'info': 'B線'}, {'time': '10:45', 'info': 'B線'}, {'time': '11:00', 'info': 'B線'}, {'time': '11:15', 'info': 'B線'}, {'time': '11:30', 'info': 'B線'}, {'time': '11:45', 'info': 'B線'}, {'time': '12:00', 'info': 'B線'}, {'time': '12:10', 'info': 'B線'}, {'time': '12:15', 'info': 'B線'}, {'time': '12:25', 'info': 'B線'}, {'time': '12:35', 'info': 'B線'}, {'time': '12:45', 'info': 'B線'}, {'time': '12:55', 'info': 'B線'}, {'time': '13:00', 'info': 'B線'}, {'time': '13:10', 'info': 'B線'}, {'time': '13:20', 'info': 'B線'}, {'time': '13:25', 'info': 'B線'}, {'time': '13:35', 'info': 'B線'}, {'time': '13:45', 'info': 'B線'}, {'time': '13:50', 'info': 'B線'}, {'time': '14:00', 'info': 'B線'}, {'time': '14:15', 'info': 'B線'}, {'time': '14:25', 'info': 'B線'}, {'time': '14:40', 'info': 'B線'}, {'time': '14:55', 'info': 'B線'}, {'time': '15:10', 'info': 'B線'}, {'time': '15:25', 'info': 'B線'}, {'time': '15:40', 'info': 'B線'}, {'time': '15:50', 'info': 'B線'}, {'time': '16:00', 'info': 'B線'}, {'time': '16:10', 'info': 'B線'}, {'time': '16:20', 'info': 'B線'}, {'time': '16:30', 'info': 'B線'}, {'time': '16:40', 'info': 'B線'}, {'time': '16:50', 'info': 'B線'}, {'time': '17:00', 'info': 'B線'}, {'time': '17:10', 'info': 'B線'}, {'time': '17:20', 'info': 'B線'}, {'time': '17:25', 'info': 'B線'}, {'time': '17:35', 'info': 'B線'}, {'time': '17:45', 'info': 'B線'}, {'time': '17:50', 'info': 'B線'}, {'time': '18:00', 'info': 'B線'}, {'time': '18:10', 'info': 'B線'}, {'time': '18:15', 'info': 'B線'}, {'time': '18:25', 'info': 'B線'}, {'time': '18:35', 'info': 'B線'}, {'time': '18:40', 'info': 'B線'}, {'time': '18:50', 'info': 'B線'}, {'time': '19:05', 'info': 'B線'}, {'time': '19:15', 'info': 'B線'}, {'time': '19:30', 'info': 'B線'}, {'time': '19:40', 'info': 'B線'}, {'time': '19:55', 'info': 'B線'}, {'time': '20:05', 'info': 'B線'}, {'time': '20:20', 'info': 'B線'}, {'time': '20:30', 'info': 'B線'}, {'time': '20:45', 'info': 'B線'}, {'time': '20:55', 'info': 'B線'}, {'time': '21:10', 'info': 'B線'}, {'time': '21:20', 'info': 'B線'}, {'time': '21:35', 'info': 'B線'}, {'time': '21:45', 'info': 'B線'}, {'time': '21:55', 'info': 'B線'}, {'time': '22:05', 'info': 'B線'}, {'time': '22:15', 'info': 'B線'}, {'time': '22:25', 'info': 'B線'}, {'time': '22:35', 'info': 'B線'}, {'time': '22:45', 'info': 'B線'}, {'time': '23:00', 'info': 'B線'}, {'time': '23:15', 'info': 'B線 停全座'}]},
-    ('c', False): {'description': '大埔延長線 非假日', 'schedule': [{'time': '09:15', 'info': 'C線 9座開出'}, {'time': '10:15', 'info': 'C線 9座開出'}, {'time': '11:15', 'info': 'C線 9座開出'}, {'time': '12:15', 'info': 'C線 9座開出'}, {'time': '13:15', 'info': 'C線 9座開出'}, {'time': '14:15', 'info': 'C線 9座開出'}, {'time': '15:15', 'info': 'C線 9座開出'}, {'time': '16:15', 'info': 'C線 9座開出'}, {'time': '17:15', 'info': 'C線 9座開出'}, {'time': '20:15', 'info': 'C線 9座開出'}, {'time': '21:15', 'info': 'C線 9座開出'}, {'time': '22:15', 'info': 'C線 9座開出'}]},
-    ('c', True): {'description': '大埔延長線 假日', 'schedule': [{'time': '06:30', 'info': 'C線 9座開出'}, {'time': '07:30', 'info': 'C線 9座開出'}, {'time': '08:30', 'info': 'C線 9座開出'}, {'time': '09:30', 'info': 'C線 9座開出'}, {'time': '10:30', 'info': 'C線 9座開出'}, {'time': '11:30', 'info': 'C線 9座開出'}, {'time': '14:30', 'info': 'C線 9座開出'}, {'time': '15:30', 'info': 'C線 9座開出'}, {'time': '16:30', 'info': 'C線 9座開出'}, {'time': '19:30', 'info': 'C線 9座開出'}, {'time': '20:30', 'info': 'C線 9座開出'}, {'time': '21:30', 'info': 'C線 9座開出'}, {'time': '22:30', 'info': 'C線 9座開出'}]}
-}
+# Global variable to store bus schedule data
+bus_schedule = {}
+
+async def fetch_bus_schedule():
+    url = 'https://raw.githubusercontent.com/shing6326/hacs-the-regent-shuttle/master/bus_schedule.json'  # Replace with the actual URL
+    async with aiohttp.ClientSession() as session:
+        async with session.get(url) as response:
+            if response.status == 200:
+                text = await response.text(encoding='utf-8-sig')
+                loaded_dict = json.loads(text)
+                bus_schedule.clear()
+                bus_schedule.update({(key.split('_')[0], key.split('_')[1] == 'True'): value for key, value in loaded_dict.items()})
 
 # Global variable to store holiday data
 holiday_data = {}
@@ -33,13 +39,12 @@ async def fetch_and_update_holiday_data():
             if response.status == 200:
                 text = await response.text(encoding='utf-8-sig')
                 new_data = json.loads(text)
-
                 # Update the global holiday data
                 holiday_data.clear()
                 holiday_data.update(new_data)
 
 # Refresh and update holiday data
-async def check_and_refresh_holiday_data(hass):
+async def check_and_refresh_holiday_data():
     # Determine the last date in the holiday data
     if not holiday_data or 'vcalendar' not in holiday_data or not holiday_data['vcalendar'][0]['vevent']:
         return  # Can't determine the last date, so don't do anything
@@ -79,13 +84,22 @@ def get_next_schedules(route, is_holiday, current_time, n):
     return future_schedules[:n]
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
+    # Fetch and update bus schedule data at startup
+    await fetch_bus_schedule()
+    # Schedule daily check for new holiday data
+    hass.helpers.event.async_track_time_change(
+        fetch_bus_schedule, 
+        hour=23, minute=55, second=0
+    )
+
     # Fetch and update holiday data at startup
     await fetch_and_update_holiday_data()
     # Schedule daily check for new holiday data
     hass.helpers.event.async_track_time_change(
-        lambda now: check_and_refresh_holiday_data(hass),
+        check_and_refresh_holiday_data,
         hour=0, minute=0, second=0
     )
+
     """Set up the sensor platform."""
     sensors = []
     # Retrieve unique routes from bus_schedule
@@ -218,11 +232,15 @@ class BusScheduleSensor(Entity):
                 minutes = int((seconds_diff % 3600) // 60)
                 self._state = f"{hours}:{minutes:02}小時"
         else:
-            # No more schedules for the day
-            self._name = '⠀'
-            self._state = '⠀'
-            self._icon = '⠀'
             self._attributes = {}
+            if self.index == 0:
+                self._name = "尾班車已開出"
+                self._state = '-- --'
+                self._icon = "mdi:information-outline"
+            else:
+                self._name = '⠀'
+                self._state = '⠀'
+                self._icon = '⠀'
 
         # Schedule the next update
         self.schedule_next_update()
