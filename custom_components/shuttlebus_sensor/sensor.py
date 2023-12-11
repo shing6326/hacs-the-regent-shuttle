@@ -6,19 +6,20 @@ from homeassistant.components.sensor import (
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
-
 from homeassistant.helpers.entity import Entity
+
 from datetime import datetime, timedelta
 import pytz
 import aiohttp
 import json
 
+# Global variable
+bus_schedule = {}
+holiday_data = {}
 timezone = pytz.timezone('Asia/Hong_Kong')
 
-# Global variable to store bus schedule data
-bus_schedule = {}
-
-async def fetch_bus_schedule():
+# Async function to fetch and update bus schedule
+async def fetch_and_update_bus_schedule():
     url = 'https://raw.githubusercontent.com/shing6326/hacs-the-regent-shuttle/master/bus_schedule.json'  # Replace with the actual URL
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as response:
@@ -27,9 +28,6 @@ async def fetch_bus_schedule():
                 loaded_dict = json.loads(text)
                 bus_schedule.clear()
                 bus_schedule.update({(key.split('_')[0], key.split('_')[1] == 'True'): value for key, value in loaded_dict.items()})
-
-# Global variable to store holiday data
-holiday_data = {}
 
 # Async function to fetch and update holiday data
 async def fetch_and_update_holiday_data():
@@ -47,16 +45,15 @@ async def fetch_and_update_holiday_data():
 async def check_and_refresh_holiday_data():
     # Determine the last date in the holiday data
     if not holiday_data or 'vcalendar' not in holiday_data or not holiday_data['vcalendar'][0]['vevent']:
-        return  # Can't determine the last date, so don't do anything
-
-    last_event = holiday_data['vcalendar'][0]['vevent'][-1]
-    last_holiday_date = datetime.strptime(last_event['dtstart'][0], '%Y%m%d').date()
-
-    # Check if the current date is the same or later than the last holiday date
-    current_date = datetime.now(timezone).date()
-    if current_date >= last_holiday_date:
-        # Fetch new data as the current date is the same or later than the last holiday
-        await fetch_and_update_holiday_data()
+        await fetch_and_update_holiday_data()  # Can't determine the last date, force refresh
+    else:
+        last_event = holiday_data['vcalendar'][0]['vevent'][-1]
+        last_holiday_date = datetime.strptime(last_event['dtstart'][0], '%Y%m%d').date()
+        # Check if the current date is the same or later than the last holiday date
+        current_date = datetime.now(timezone).date()
+        if current_date >= last_holiday_date:
+            # Fetch new data as the current date is the same or later than the last holiday
+            await fetch_and_update_holiday_data()
 
 # Function to check if a given date is a holiday or a weekend (Saturday or Sunday)
 # This remains a synchronous function
@@ -85,13 +82,12 @@ def get_next_schedules(route, is_holiday, current_time, n):
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     # Fetch and update bus schedule data at startup
-    await fetch_bus_schedule()
+    await fetch_and_update_bus_schedule()
     # Schedule daily check for new holiday data
     hass.helpers.event.async_track_time_change(
-        fetch_bus_schedule, 
+        fetch_and_update_bus_schedule,
         hour=23, minute=55, second=0
     )
-
     # Fetch and update holiday data at startup
     await fetch_and_update_holiday_data()
     # Schedule daily check for new holiday data
@@ -99,7 +95,6 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
         check_and_refresh_holiday_data,
         hour=0, minute=0, second=0
     )
-
     """Set up the sensor platform."""
     sensors = []
     # Retrieve unique routes from bus_schedule
@@ -114,7 +109,6 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
 
 class BusTitleSensor(SensorEntity):
     """Sensor for displaying shuttle title with holiday information."""
-
     def __init__(self, route: str, hass):
         """Initialize the sensor."""
         self.route = route
@@ -152,6 +146,7 @@ class BusTitleSensor(SensorEntity):
         self.hass.helpers.event.async_call_later(delay, lambda _: self.async_schedule_update_ha_state(True))
 
 class BusScheduleSensor(Entity):
+    """Sensor for displaying shuttle bus schedule details"""
     def __init__(self, route: str, index: int, hass):
         """Initialize the sensor."""
         self.route = route
