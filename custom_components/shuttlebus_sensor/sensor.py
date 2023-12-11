@@ -34,20 +34,40 @@ bus_schedules = {
     }
 }
 
-# Async function to fetch holiday data
-async def fetch_holiday_data():
+# Global variable to store holiday data
+holiday_data = {}
+
+# Async function to fetch and update holiday data
+async def fetch_and_update_holiday_data():
     url = 'https://www.1823.gov.hk/common/ical/en.json'
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as response:
             if response.status == 200:
                 text = await response.text(encoding='utf-8-sig')
-                return json.loads(text)
-            else:
-                return None
+                new_data = json.loads(text)
+
+                # Update the global holiday data
+                holiday_data.clear()
+                holiday_data.update(new_data)
+
+# Refresh and update holiday data
+async def check_and_refresh_holiday_data(hass):
+    # Determine the last date in the holiday data
+    if not holiday_data or 'vcalendar' not in holiday_data or not holiday_data['vcalendar'][0]['vevent']:
+        return  # Can't determine the last date, so don't do anything
+
+    last_event = holiday_data['vcalendar'][0]['vevent'][-1]
+    last_holiday_date = datetime.strptime(last_event['dtstart'][0], '%Y%m%d').date()
+
+    # Check if the current date is the same or later than the last holiday date
+    current_date = datetime.now(timezone).date()
+    if current_date >= last_holiday_date:
+        # Fetch new data as the current date is the same or later than the last holiday
+        await fetch_and_update_holiday_data()
 
 # Function to check if a given date is a holiday or a weekend (Saturday or Sunday)
 # This remains a synchronous function
-def is_holiday_or_weekend(date, holiday_data):
+def is_holiday_or_weekend(date):
     # Check if the day is Saturday or Sunday
     if date.weekday() == 5 or date.weekday() == 6:  # 5 is Saturday, 6 is Sunday
         return True
@@ -64,31 +84,37 @@ def get_next_schedules(route, day_type, current_time, n):
     return future_schedules[:n]
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
+
+    # Fetch and update holiday data at startup
+    await fetch_and_update_holiday_data()
+
+    # Schedule daily check for new holiday data
+    hass.helpers.event.async_track_time_change(
+        lambda now: check_and_refresh_holiday_data(hass),
+        hour=0, minute=0, second=0
+    )
+
     """Set up the sensor platform."""
     sensors = []
 
-    # Fetch holiday data asynchronously
-    holiday_data = await fetch_holiday_data()
-
     # Add title sensors
-    sensors.append(BusTitleSensor('route_b', hass, holiday_data))
-    sensors.append(BusTitleSensor('route_c', hass, holiday_data))
+    sensors.append(BusTitleSensor('route_b', hass))
+    sensors.append(BusTitleSensor('route_c', hass))
 
     # Create 4 sensors for each shuttle route
     for i in range(4):
-        sensors.append(BusScheduleSensor('route_b', i, hass, holiday_data))
-        sensors.append(BusScheduleSensor('route_c', i, hass, holiday_data))
+        sensors.append(BusScheduleSensor('route_b', i, hass))
+        sensors.append(BusScheduleSensor('route_c', i, hass))
 
     async_add_entities(sensors, True)  # The True at the end triggers an update upon entity addition
 
 class BusTitleSensor(SensorEntity):
     """Sensor for displaying shuttle title with holiday information."""
 
-    def __init__(self, route: str, hass, holiday_data):
+    def __init__(self, route: str, hass):
         """Initialize the sensor."""
         self.route = route
         self.hass = hass
-        self.holiday_data = holiday_data
         self._name = None
         self.entity_id = f"sensor.shuttlebus_{self.route}_title"
         self.update()
@@ -112,7 +138,7 @@ class BusTitleSensor(SensorEntity):
         now = datetime.now(timezone)
         current_date = now.date()
         route_name = "南運路" if self.route == 'route_b' else "大埔延長線"
-        holiday_status = "假日" if is_holiday_or_weekend(current_date, self.holiday_data) else "非假日"
+        holiday_status = "假日" if is_holiday_or_weekend(current_date) else "非假日"
         return f"{route_name} {holiday_status}"
 
     def update(self):
@@ -128,12 +154,11 @@ class BusTitleSensor(SensorEntity):
         self.hass.helpers.event.async_call_later(delay, lambda _: self.async_schedule_update_ha_state(True))
 
 class BusScheduleSensor(Entity):
-    def __init__(self, route: str, index: int, hass, holiday_data):
+    def __init__(self, route: str, index: int, hass):
         """Initialize the sensor."""
         self.route = route
         self.index = index
         self.hass = hass
-        self.holiday_data = holiday_data
         self._name = None
         self._icon = None
         self._state = None
@@ -172,7 +197,7 @@ class BusScheduleSensor(Entity):
         current_date = now.date()
 
         # Determine if today is a holiday or non-holiday
-        is_holiday = is_holiday_or_weekend(current_date, self.holiday_data)
+        is_holiday = is_holiday_or_weekend(current_date)
 
         # Fetch the next schedules
         next_schedules = get_next_schedules(self.route, 'holiday' if is_holiday else 'non_holiday', current_time, 4)
