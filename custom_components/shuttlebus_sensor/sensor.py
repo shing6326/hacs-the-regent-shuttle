@@ -83,16 +83,16 @@ def get_next_schedules(route, is_holiday, current_time, n):
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     # Fetch and update bus schedule data at startup
     await fetch_and_update_bus_schedule()
-    # Schedule daily check for new holiday data
+    # Schedule daily check for new bus schedule data
     hass.helpers.event.async_track_time_change(
-        fetch_and_update_bus_schedule,
+        lambda now: hass.async_create_task(fetch_and_update_bus_schedule()),
         hour=23, minute=55, second=0
     )
     # Fetch and update holiday data at startup
     await fetch_and_update_holiday_data()
     # Schedule daily check for new holiday data
     hass.helpers.event.async_track_time_change(
-        check_and_refresh_holiday_data,
+        lambda now: hass.async_create_task(check_and_refresh_holiday_data()),
         hour=0, minute=0, second=0
     )
     """Set up the sensor platform."""
