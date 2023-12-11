@@ -73,7 +73,9 @@ def is_holiday_or_weekend(date):
         return True
     # Check against holiday data
     for event in holiday_data['vcalendar'][0]['vevent']:
-        if date == datetime.strptime(event['dtstart'][0], '%Y%m%d').date():
+        start_date = datetime.strptime(event['dtstart'][0], '%Y%m%d').date()
+        end_date = datetime.strptime(event['dtend'][0], '%Y%m%d').date()
+        if start_date <= date < end_date:  # Check if date falls within the holiday range
             return True
     return False
 
