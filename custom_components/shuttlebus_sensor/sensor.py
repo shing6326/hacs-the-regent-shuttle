@@ -123,7 +123,7 @@ class BusTitleSensor(SensorEntity):
     def schedule_next_update(self):
         """Schedule the next update at midnight."""
         now = datetime.now(timezone)
-        next_midnight = datetime.combine(now.date() + timedelta(days=1), datetime.min.time())
+        next_midnight = timezone.localize(datetime.combine(now.date() + timedelta(days=1), datetime.min.time()))
         delay = (next_midnight - now).total_seconds()
         self.hass.helpers.event.async_call_later(delay, lambda _: self.async_schedule_update_ha_state(True))
 
