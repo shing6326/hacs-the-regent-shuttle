@@ -12,14 +12,15 @@ from datetime import datetime, timedelta
 import pytz
 import aiohttp
 import json
+import os
 
 # Global variable
 bus_schedule = {}
 holiday_data = {}
 timezone = pytz.timezone('Asia/Hong_Kong')
 
-# Async function to fetch and update bus schedule
-async def fetch_and_update_bus_schedule():
+# Async function to fetch and update bus schedule from web
+async def fetch_and_update_bus_schedule_www():
     url = 'https://raw.githubusercontent.com/shing6326/hacs-the-regent-shuttle/master/bus_schedule.json'  # Replace with the actual URL
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as response:
@@ -29,8 +30,8 @@ async def fetch_and_update_bus_schedule():
                 bus_schedule.clear()
                 bus_schedule.update({(key.split('_')[0], key.split('_')[1] == 'True'): value for key, value in loaded_dict.items()})
 
-# Async function to fetch and update holiday data
-async def fetch_and_update_holiday_data():
+# Async function to fetch and update holiday data from web
+async def fetch_and_update_holiday_data_www():
     url = 'https://www.1823.gov.hk/common/ical/en.json'
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as response:
@@ -41,11 +42,33 @@ async def fetch_and_update_holiday_data():
                 holiday_data.clear()
                 holiday_data.update(new_data)
 
+# Async function to fetch and update bus schedule from file
+async def fetch_and_update_bus_schedule_file():
+    file_path = os.path.join(os.path.dirname(__file__), 'data/bus_schedule.json')
+    try:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            loaded_dict = json.load(file)
+            bus_schedule.clear()
+            bus_schedule.update({(key.split('_')[0], key.split('_')[1] == 'True'): value for key, value in loaded_dict.items()})
+    except Exception as e:
+        print(f"Error loading bus schedule from JSON file: {e}")
+
+# Async function to fetch and update holiday data from file
+async def fetch_and_update_holiday_data_file():
+    file_path = os.path.join(os.path.dirname(__file__), 'data/en.json')
+    try:
+        with open(file_path, 'r', encoding='utf-8') as file:
+            loaded_dict = json.load(file)
+            bus_schedule.clear()
+            bus_schedule.update({(key.split('_')[0], key.split('_')[1] == 'True'): value for key, value in loaded_dict.items()})
+    except Exception as e:
+        print(f"Error loading holiday data from JSON file: {e}")
+
 # Refresh and update holiday data
 async def check_and_refresh_holiday_data():
     # Determine the last date in the holiday data
     if not holiday_data or 'vcalendar' not in holiday_data or not holiday_data['vcalendar'][0]['vevent']:
-        await fetch_and_update_holiday_data()  # Can't determine the last date, force refresh
+        await fetch_and_update_holiday_data_file()  # Can't determine the last date, force refresh
     else:
         last_event = holiday_data['vcalendar'][0]['vevent'][-1]
         last_holiday_date = datetime.strptime(last_event['dtstart'][0], '%Y%m%d').date()
@@ -53,7 +76,7 @@ async def check_and_refresh_holiday_data():
         current_date = datetime.now(timezone).date()
         if current_date >= last_holiday_date:
             # Fetch new data as the current date is the same or later than the last holiday
-            await fetch_and_update_holiday_data()
+            await fetch_and_update_holiday_data_file()
 
 # Function to check if a given date is a holiday or a weekend (Saturday or Sunday)
 # This remains a synchronous function
@@ -82,14 +105,14 @@ def get_next_schedules(route, is_holiday, current_time, n):
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     # Fetch and update bus schedule data at startup
-    await fetch_and_update_bus_schedule()
+    await fetch_and_update_bus_schedule_file()
     # Schedule daily check for new bus schedule data
     hass.helpers.event.async_track_time_change(
-        lambda now: hass.async_create_task(fetch_and_update_bus_schedule()),
+        lambda now: hass.async_create_task(fetch_and_update_bus_schedule_file()),
         hour=23, minute=55, second=0
     )
     # Fetch and update holiday data at startup
-    await fetch_and_update_holiday_data()
+    await fetch_and_update_holiday_data_file()
     # Schedule daily check for new holiday data
     hass.helpers.event.async_track_time_change(
         lambda now: hass.async_create_task(check_and_refresh_holiday_data()),
