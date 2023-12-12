@@ -58,9 +58,9 @@ async def fetch_and_update_holiday_data_file():
     file_path = os.path.join(os.path.dirname(__file__), 'data/en.json')
     try:
         with open(file_path, 'r', encoding='utf-8') as file:
-            loaded_dict = json.load(file)
-            bus_schedule.clear()
-            bus_schedule.update({(key.split('_')[0], key.split('_')[1] == 'True'): value for key, value in loaded_dict.items()})
+            new_data = json.load(file)
+            holiday_data.clear()
+            holiday_data.update(new_data)
     except Exception as e:
         print(f"Error loading holiday data from JSON file: {e}")
 
