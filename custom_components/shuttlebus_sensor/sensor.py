@@ -21,7 +21,7 @@ timezone = pytz.timezone('Asia/Hong_Kong')
 
 # Async function to fetch and update bus schedule from web
 async def fetch_and_update_bus_schedule_www():
-    url = 'https://raw.githubusercontent.com/shing6326/hacs-the-regent-shuttle/master/bus_schedule.json'  # Replace with the actual URL
+    url = 'https://raw.githubusercontent.com/shing6326/hacs-the-regent-shuttle/master/custom_components/shuttlebus_sensor/data/bus_schedule.json'
     async with aiohttp.ClientSession() as session:
         async with session.get(url) as response:
             if response.status == 200:
