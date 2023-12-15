@@ -282,7 +282,7 @@ class BusScheduleSensor(Entity):
             self._attributes = {}
             if self.index == 0:
                 self._name = "尾班車已開出"
-                self._state = '-- --'
+                self._state = '⠀'
                 self._icon = "mdi:information-outline"
             else:
                 self._name = '⠀'
