@@ -22,25 +22,48 @@ timezone = pytz.timezone('Asia/Hong_Kong')
 # Async function to fetch and update bus schedule from web
 async def fetch_and_update_bus_schedule_www():
     url = 'https://raw.githubusercontent.com/shing6326/hacs-the-regent-shuttle/master/custom_components/shuttlebus_sensor/data/bus_schedule.json'
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url) as response:
-            if response.status == 200:
-                text = await response.text(encoding='utf-8-sig')
-                loaded_dict = json.loads(text)
-                bus_schedule.clear()
-                bus_schedule.update({(key.split('_')[0], key.split('_')[1] == 'True'): value for key, value in loaded_dict.items()})
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as response:
+                if response.status == 200:
+                    text = await response.text(encoding='utf-8-sig')
+                    loaded_dict = json.loads(text)
+                    updated_schedule = {}
+
+                    for key, value in loaded_dict.items():
+                        try:
+                            route, holiday_flag = key.split('_')
+                            updated_schedule[(route, holiday_flag == 'True')] = value
+                        except ValueError:
+                            # Handle the error (e.g., log it, skip the item, etc.)
+                            print(f"Invalid key format: {key}")
+
+                    bus_schedule.clear()
+                    bus_schedule.update(updated_schedule)
+    except Exception as e:
+        # Handle other exceptions (e.g., network errors, JSON parsing errors)
+        print(f"Failed to fetch or update bus schedule: {e}")
 
 # Async function to fetch and update holiday data from web
 async def fetch_and_update_holiday_data_www():
     url = 'https://www.1823.gov.hk/common/ical/en.json'
-    async with aiohttp.ClientSession() as session:
-        async with session.get(url) as response:
-            if response.status == 200:
-                text = await response.text(encoding='utf-8-sig')
-                new_data = json.loads(text)
-                # Update the global holiday data
-                holiday_data.clear()
-                holiday_data.update(new_data)
+    try:
+        async with aiohttp.ClientSession() as session:
+            async with session.get(url) as response:
+                if response.status == 200:
+                    text = await response.text(encoding='utf-8-sig')
+                    new_data = json.loads(text)
+                    if 'vcalendar' in new_data and new_data['vcalendar'][0]['vevent']:
+                        # Update the global holiday data
+                        holiday_data.clear()
+                        holiday_data.update(new_data)
+                    else:
+                        print("Invalid holiday data format received.")
+                else:
+                    print(f"Failed to fetch holiday data: HTTP Status {response.status}")
+    except Exception as e:
+        # Handle exceptions (e.g., network errors, JSON parsing errors)
+        print(f"Failed to fetch or update holiday data: {e}")
 
 # Async function to fetch and update bus schedule from file
 async def fetch_and_update_bus_schedule_file():
@@ -64,11 +87,17 @@ async def fetch_and_update_holiday_data_file():
     except Exception as e:
         print(f"Error loading holiday data from JSON file: {e}")
 
+async def fetch_and_update_bus_schedule():
+    await fetch_and_update_bus_schedule_www()
+
+async def fetch_and_update_holiday_data():
+    await fetch_and_update_holiday_data_www()
+
 # Refresh and update holiday data
 async def check_and_refresh_holiday_data():
     # Determine the last date in the holiday data
     if not holiday_data or 'vcalendar' not in holiday_data or not holiday_data['vcalendar'][0]['vevent']:
-        await fetch_and_update_holiday_data_file()  # Can't determine the last date, force refresh
+        await fetch_and_update_holiday_data()  # Can't determine the last date, force refresh
     else:
         last_event = holiday_data['vcalendar'][0]['vevent'][-1]
         last_holiday_date = datetime.strptime(last_event['dtstart'][0], '%Y%m%d').date()
@@ -76,7 +105,7 @@ async def check_and_refresh_holiday_data():
         current_date = datetime.now(timezone).date()
         if current_date >= last_holiday_date:
             # Fetch new data as the current date is the same or later than the last holiday
-            await fetch_and_update_holiday_data_file()
+            await fetch_and_update_holiday_data()
 
 # Function to check if a given date is a holiday or a weekend (Saturday or Sunday)
 # This remains a synchronous function
@@ -105,14 +134,14 @@ def get_next_schedules(route, is_holiday, current_time, n):
 
 async def async_setup_platform(hass, config, async_add_entities, discovery_info=None):
     # Fetch and update bus schedule data at startup
-    await fetch_and_update_bus_schedule_file()
+    await fetch_and_update_bus_schedule()
     # Schedule daily check for new bus schedule data
     hass.helpers.event.async_track_time_change(
-        lambda now: hass.async_create_task(fetch_and_update_bus_schedule_file()),
+        lambda now: hass.async_create_task(fetch_and_update_bus_schedule()),
         hour=23, minute=55, second=0
     )
     # Fetch and update holiday data at startup
-    await fetch_and_update_holiday_data_file()
+    await fetch_and_update_holiday_data()
     # Schedule daily check for new holiday data
     hass.helpers.event.async_track_time_change(
         lambda now: hass.async_create_task(check_and_refresh_holiday_data()),
