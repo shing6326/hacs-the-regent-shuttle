@@ -6,7 +6,6 @@ from homeassistant.components.sensor import (
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
-from homeassistant.helpers.entity import Entity
 
 from datetime import datetime, timedelta
 import pytz
@@ -167,7 +166,6 @@ class BusTitleSensor(SensorEntity):
         self.hass = hass
         self._name = None
         self.entity_id = f"sensor.shuttlebus_route_{self.route}_title"
-        self.update()
 
     @property
     def name(self):
@@ -197,7 +195,7 @@ class BusTitleSensor(SensorEntity):
         delay = (next_midnight - now).total_seconds()
         self.hass.helpers.event.async_call_later(delay, lambda _: self.async_schedule_update_ha_state(True))
 
-class BusScheduleSensor(Entity):
+class BusScheduleSensor(SensorEntity):
     """Sensor for displaying shuttle bus schedule details"""
     def __init__(self, route: str, index: int, hass):
         """Initialize the sensor."""
@@ -209,7 +207,6 @@ class BusScheduleSensor(Entity):
         self._icon = '⠀'
         self._attributes = {}
         self.entity_id = f"sensor.shuttlebus_route_{self.route}_{self.index + 1}"
-        self.update()
 
     @property
     def name(self):
