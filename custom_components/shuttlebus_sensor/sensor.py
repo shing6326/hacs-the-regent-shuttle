@@ -197,7 +197,7 @@ class BusTitleSensor(SensorEntity):
         now = datetime.now(timezone)
         next_midnight = timezone.localize(datetime.combine(now.date() + timedelta(days=1), datetime.min.time()))
         delay = (next_midnight - now).total_seconds()
-        async_call_later(self.hass, delay, self.async_update)
+        async_call_later(self.hass, delay, self.async_update_ha_state)
 
 class BusScheduleSensor(SensorEntity):
     """Sensor for displaying shuttle bus schedule details"""
@@ -298,4 +298,4 @@ class BusScheduleSensor(SensorEntity):
         now = datetime.now(timezone)
         next_minute = (now + timedelta(minutes=1)).replace(second=0, microsecond=0)
         delay = (next_minute - now).total_seconds()
-        async_call_later(self.hass, delay, self.async_update)
+        async_call_later(self.hass, delay, self.async_update_ha_state)
