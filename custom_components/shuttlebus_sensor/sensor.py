@@ -6,6 +6,7 @@ from homeassistant.components.sensor import (
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
+from homeassistant.helpers.event import async_call_later, async_track_time_change
 
 from datetime import datetime, timedelta
 import pytz
@@ -135,14 +136,16 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     # Fetch and update bus schedule data at startup
     await fetch_and_update_bus_schedule()
     # Schedule daily check for new bus schedule data
-    hass.helpers.event.async_track_time_change(
+    async_track_time_change(
+        hass,
         lambda now: hass.async_create_task(fetch_and_update_bus_schedule()),
         hour=23, minute=55, second=0
     )
     # Fetch and update holiday data at startup
     await fetch_and_update_holiday_data()
     # Schedule daily check for new holiday data
-    hass.helpers.event.async_track_time_change(
+    async_track_time_change(
+        hass,
         lambda now: hass.async_create_task(check_and_refresh_holiday_data()),
         hour=0, minute=0, second=0
     )
@@ -181,19 +184,20 @@ class BusTitleSensor(SensorEntity):
         """Sensor should not be polled."""
         return False
 
-    def update(self):
+    async def async_update(self, _=None):
         """Update the sensor."""
         # Access the description directly using the route and holiday status
         schedule_key = (self.route, is_holiday_or_weekend())
         self._name = bus_schedule.get(schedule_key, {}).get('description', '')
-        self.schedule_next_update()
+        # Schedule the next update asynchronously
+        await self.async_schedule_next_update()
 
-    def schedule_next_update(self):
+    async def async_schedule_next_update(self):
         """Schedule the next update at midnight."""
         now = datetime.now(timezone)
         next_midnight = timezone.localize(datetime.combine(now.date() + timedelta(days=1), datetime.min.time()))
         delay = (next_midnight - now).total_seconds()
-        self.hass.helpers.event.async_call_later(delay, lambda _: self.async_schedule_update_ha_state(True))
+        async_call_later(self.hass, delay, self.async_update)
 
 class BusScheduleSensor(SensorEntity):
     """Sensor for displaying shuttle bus schedule details"""
@@ -232,7 +236,7 @@ class BusScheduleSensor(SensorEntity):
         """Sensor should not be polled."""
         return False
 
-    def update(self):
+    async def async_update(self, _=None):
         """Fetch new state data for the sensor."""
         now = datetime.now(timezone)
         current_time = now.strftime('%H:%M')
@@ -286,13 +290,12 @@ class BusScheduleSensor(SensorEntity):
                 self._state = '⠀'
                 self._icon = '⠀'
 
-        # Schedule the next update
-        self.schedule_next_update()
+        # Schedule the next update asynchronously
+        await self.async_schedule_next_update()
 
-    def schedule_next_update(self):
+    async def async_schedule_next_update(self):
         """Schedule the next update at the start of the next minute."""
         now = datetime.now(timezone)
         next_minute = (now + timedelta(minutes=1)).replace(second=0, microsecond=0)
         delay = (next_minute - now).total_seconds()
-        # Use Home Assistant's event loop to schedule the next update
-        self.hass.helpers.event.async_call_later(delay, lambda _: self.async_schedule_update_ha_state(True))
+        async_call_later(self.hass, delay, self.async_update)
