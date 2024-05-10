@@ -138,7 +138,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     # Schedule daily check for new bus schedule data
     async_track_time_change(
         hass,
-        lambda now: hass.async_create_task(fetch_and_update_bus_schedule()),
+        lambda now: hass.create_task(fetch_and_update_bus_schedule()),
         hour=23, minute=55, second=0
     )
     # Fetch and update holiday data at startup
@@ -146,7 +146,7 @@ async def async_setup_platform(hass, config, async_add_entities, discovery_info=
     # Schedule daily check for new holiday data
     async_track_time_change(
         hass,
-        lambda now: hass.async_create_task(check_and_refresh_holiday_data()),
+        lambda now: hass.create_task(check_and_refresh_holiday_data()),
         hour=0, minute=0, second=0
     )
     """Set up the sensor platform."""
