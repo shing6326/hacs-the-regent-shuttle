@@ -184,14 +184,14 @@ class BusTitleSensor(SensorEntity):
         """Sensor should not be polled."""
         return False
 
-    def update(self):
+    async def async_update(self):
         """Update the sensor."""
         # Access the description directly using the route and holiday status
         schedule_key = (self.route, is_holiday_or_weekend())
         self._name = bus_schedule.get(schedule_key, {}).get('description', '')
-        self.schedule_next_update()
+        await self.async_schedule_next_update()
 
-    def schedule_next_update(self):
+    async def async_schedule_next_update(self):
         """Schedule the next update at midnight."""
         now = datetime.now(timezone)
         next_midnight = timezone.localize(datetime.combine(now.date() + timedelta(days=1), datetime.min.time()))
@@ -235,7 +235,7 @@ class BusScheduleSensor(SensorEntity):
         """Sensor should not be polled."""
         return False
 
-    def update(self):
+    async def async_update(self):
         """Fetch new state data for the sensor."""
         now = datetime.now(timezone)
         current_time = now.strftime('%H:%M')
@@ -290,9 +290,9 @@ class BusScheduleSensor(SensorEntity):
                 self._icon = '⠀'
 
         # Schedule the next update
-        self.schedule_next_update()
+        await self.async_schedule_next_update()
 
-    def schedule_next_update(self):
+    async def async_schedule_next_update(self):
         """Schedule the next update at the start of the next minute."""
         now = datetime.now(timezone)
         next_minute = (now + timedelta(minutes=1)).replace(second=0, microsecond=0)
