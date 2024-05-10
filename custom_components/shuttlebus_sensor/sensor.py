@@ -196,7 +196,7 @@ class BusTitleSensor(SensorEntity):
         now = datetime.now(timezone)
         next_midnight = timezone.localize(datetime.combine(now.date() + timedelta(days=1), datetime.min.time()))
         delay = (next_midnight - now).total_seconds()
-        async_call_later(self.hass, delay, lambda _: self.async_schedule_update_ha_state(True))
+        async_call_later(self.hass, delay, lambda _: self.schedule_update_ha_state(True))
 
 class BusScheduleSensor(SensorEntity):
     """Sensor for displaying shuttle bus schedule details"""
@@ -298,4 +298,4 @@ class BusScheduleSensor(SensorEntity):
         next_minute = (now + timedelta(minutes=1)).replace(second=0, microsecond=0)
         delay = (next_minute - now).total_seconds()
         # Use Home Assistant's event loop to schedule the next update
-        async_call_later(self.hass, delay, lambda _: self.async_schedule_update_ha_state(True))
+        async_call_later(self.hass, delay, lambda _: self.schedule_update_ha_state(True))
