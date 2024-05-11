@@ -295,7 +295,7 @@ class BusScheduleSensor(SensorEntity):
     async def async_schedule_next_update(self):
         """Schedule the next update at the start of the next minute."""
         now = datetime.now(timezone)
-        next_minute = (now + timedelta(minutes=1)).replace(second=0, microsecond=0)
+        next_minute = now.replace(second=0, microsecond=0) + timedelta(minutes=1)
         delay = (next_minute - now).total_seconds()
         # Use Home Assistant's event loop to schedule the next update
         async_call_later(self.hass, delay, lambda _: self.schedule_update_ha_state(True))
