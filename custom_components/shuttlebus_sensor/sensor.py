@@ -6,7 +6,7 @@ from homeassistant.components.sensor import (
 from homeassistant.core import HomeAssistant
 from homeassistant.helpers.entity_platform import AddEntitiesCallback
 from homeassistant.helpers.typing import ConfigType, DiscoveryInfoType
-from homeassistant.helpers.event import async_call_later, async_track_time_change
+from homeassistant.helpers.event import call_later, async_track_time_change
 
 from datetime import datetime, timedelta
 import pytz
