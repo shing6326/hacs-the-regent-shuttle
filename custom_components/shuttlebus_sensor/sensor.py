@@ -184,19 +184,16 @@ class BusTitleSensor(SensorEntity):
         """Sensor should not be polled."""
         return False
 
-    async def async_update(self):
+    def update(self):
         """Update the sensor."""
         # Access the description directly using the route and holiday status
         schedule_key = (self.route, is_holiday_or_weekend())
         self._name = bus_schedule.get(schedule_key, {}).get('description', '')
-        await self.async_schedule_next_update()
-
-    async def async_schedule_next_update(self):
-        """Schedule the next update at midnight."""
+        # Schedule the next update at midnight.
         now = datetime.now(timezone)
         next_midnight = timezone.localize(datetime.combine(now.date() + timedelta(days=1), datetime.min.time()))
         delay = (next_midnight - now).total_seconds()
-        async_call_later(self.hass, delay, lambda _: self.schedule_update_ha_state(True))
+        call_later(self.hass, delay, lambda _: self.schedule_update_ha_state(True))
 
 class BusScheduleSensor(SensorEntity):
     """Sensor for displaying shuttle bus schedule details"""
@@ -235,7 +232,7 @@ class BusScheduleSensor(SensorEntity):
         """Sensor should not be polled."""
         return False
 
-    async def async_update(self):
+    def update(self):
         """Fetch new state data for the sensor."""
         now = datetime.now(timezone)
         current_time = now.strftime('%H:%M')
@@ -289,13 +286,8 @@ class BusScheduleSensor(SensorEntity):
                 self._state = '⠀'
                 self._icon = '⠀'
 
-        # Schedule the next update
-        await self.async_schedule_next_update()
-
-    async def async_schedule_next_update(self):
-        """Schedule the next update at the start of the next minute."""
+        # Schedule the next update at the start of the next minute.
         now = datetime.now(timezone)
         next_minute = now.replace(second=0, microsecond=0) + timedelta(minutes=1)
         delay = (next_minute - now).total_seconds()
-        # Use Home Assistant's event loop to schedule the next update
-        async_call_later(self.hass, delay, lambda _: self.schedule_update_ha_state(True))
+        call_later(self.hass, delay, lambda _: self.schedule_update_ha_state(True))
