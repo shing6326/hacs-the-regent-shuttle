@@ -88,10 +88,16 @@ async def fetch_and_update_holiday_data_file():
         print(f"Error loading holiday data from JSON file: {e}")
 
 async def fetch_and_update_bus_schedule():
-    await fetch_and_update_bus_schedule_www()
+    try:
+        await fetch_and_update_bus_schedule_www()
+    except Exception as e:
+        print(f"Failed to fetch bus schedule from the web: {e}")
 
 async def fetch_and_update_holiday_data():
-    await fetch_and_update_holiday_data_www()
+    try:
+        await fetch_and_update_holiday_data_www()
+    except Exception as e:
+        print(f"Failed to fetch holiday data from the web: {e}")
 
 # Refresh and update holiday data
 async def check_and_refresh_holiday_data():
