@@ -210,7 +210,7 @@ class BusScheduleSensor(SensorEntity):
         self.hass = hass
         self._name = '⠀'
         self._state = '⠀'
-        self._icon = '⠀'
+        self._icon = "mdi:void"
         self._attributes = {}
         self.entity_id = f"sensor.shuttlebus_route_{self.route}_{self.index + 1}"
 
@@ -290,7 +290,7 @@ class BusScheduleSensor(SensorEntity):
             else:
                 self._name = '⠀'
                 self._state = '⠀'
-                self._icon = '⠀'
+                self._icon = "mdi:void"
 
         # Schedule the next update at the start of the next minute.
         now = datetime.now(timezone)
