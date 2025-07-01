@@ -174,6 +174,7 @@ class BusTitleSensor(SensorEntity):
         self.route = route
         self.hass = hass
         self._name = None
+        self._icon = "mdi:void"
         self.entity_id = f"sensor.shuttlebus_route_{self.route}_title"
 
     @property
@@ -185,6 +186,11 @@ class BusTitleSensor(SensorEntity):
     def state(self):
         """Return the state of the sensor."""
         return "班次"
+
+    @property
+    def icon(self):
+        """Return the icon to use in the frontend."""
+        return self._icon
 
     def should_poll(self):
         """Sensor should not be polled."""
